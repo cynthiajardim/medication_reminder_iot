@@ -1,4 +1,4 @@
-const API_URL = ''; 
+const API_URL = 'https://zonal-alignment-production.up.railway.app'; 
 
 let todosRegistros    = [];
 let registrosFiltrados = [];

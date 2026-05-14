@@ -17,11 +17,11 @@ app.add_middleware(
 
 # ── Configurações MySQL ─────────────────────────────────────
 DB_CONFIG = {
-    "host":     os.getenv("DB_HOST"),
-    "port":     int(os.getenv("DB_PORT", 3306)),
-    "user":     os.getenv("DB_USER"),
-    "password": os.getenv("DB_PASSWORD"),
-    "database": os.getenv("DB_NAME"),
+    'host': os.getenv('MYSQLHOST'),
+    'port': int(os.getenv('MYSQLPORT', 3306)),
+    'user': os.getenv('MYSQLUSER'),
+    'password': os.getenv('MYSQLPASSWORD'),
+    'database': os.getenv('MYSQLDATABASE')
 }
 
 def conectar():
