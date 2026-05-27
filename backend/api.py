@@ -1,7 +1,8 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import JSONResponse
 import mysql.connector
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -10,6 +11,7 @@ import jwt
 import bcrypt
 
 load_dotenv()
+
 app = FastAPI()
 
 app.add_middleware(
@@ -20,16 +22,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def add_cors_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"]  = "*"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
+
 # ── Configurações MySQL ─────────────────────────────────────
 DB_CONFIG = {
-    'host': os.getenv('MYSQLHOST'),
-    'port': int(os.getenv('MYSQLPORT', 3306)),
-    'user': os.getenv('MYSQLUSER'),
+    'host':     os.getenv('MYSQLHOST'),
+    'port':     int(os.getenv('MYSQLPORT', 3306)),
+    'user':     os.getenv('MYSQLUSER'),
     'password': os.getenv('MYSQLPASSWORD'),
     'database': os.getenv('MYSQLDATABASE')
 }
 
-JWT_SECRET      = os.getenv("JWT_SECRET")
+JWT_SECRET      = os.getenv("JWT_SECRET", "troque-por-uma-chave-secreta")
 JWT_EXPIRY_HOURS = 8
 
 security = HTTPBearer()
@@ -68,6 +78,52 @@ def verificar_token(credentials: HTTPAuthorizationCredentials = Depends(security
     except Exception:
         raise HTTPException(status_code=401, detail="Token inválido")
 
+# ── Startup: cria tabelas se não existirem ──────────────────
+@app.on_event("startup")
+def startup():
+    try:
+        conn = conectar()
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS registros (
+                id        INT AUTO_INCREMENT PRIMARY KEY,
+                cor       VARCHAR(20),
+                timestamp DATETIME,
+                recebido  DATETIME
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id            INT AUTO_INCREMENT PRIMARY KEY,
+                username      VARCHAR(100) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                criado_em     DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conn.commit()
+        conn.close()
+        print("Banco conectado e tabelas criadas com sucesso!")
+    except Exception as e:
+        print(f"ERRO no startup: {e}")
+
+@app.get("/ping")
+def ping():
+    try:
+        conn = conectar()
+        conn.close()
+        return {
+            "status": "ok",
+            "db": "conectado",
+            "host": os.getenv("MYSQLHOST"),
+            "database": os.getenv("MYSQLDATABASE"),
+        }
+    except Exception as e:
+        return {
+            "status": "erro",
+            "detalhe": str(e),
+            "host": os.getenv("MYSQLHOST"),
+            "database": os.getenv("MYSQLDATABASE"),
+        }
 
 # ── Auth ────────────────────────────────────────────────────
 @app.post("/login")
