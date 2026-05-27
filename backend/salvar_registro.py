@@ -24,6 +24,8 @@ DB_CONFIG = {
 }
 
 # ── Banco de dados ──────────────────────────────────────────
+ultimo_timestamp_salvo = None
+
 def criar_banco():
     conn = mysql.connector.connect(**DB_CONFIG)
     cursor = conn.cursor()
@@ -35,10 +37,25 @@ def criar_banco():
             recebido  DATETIME
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id            INT AUTO_INCREMENT PRIMARY KEY,
+            username      VARCHAR(100) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            criado_em     DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     conn.commit()
     conn.close()
 
 def salvar(cor, timestamp):
+    global ultimo_timestamp_salvo
+
+    # ignora se já salvou essa mensagem
+    if timestamp == ultimo_timestamp_salvo:
+        print(f"Ignorado (duplicado): {timestamp}")
+        return
+
     conn = mysql.connector.connect(**DB_CONFIG)
     cursor = conn.cursor()
 
@@ -53,6 +70,8 @@ def salvar(cor, timestamp):
     )
     conn.commit()
     conn.close()
+
+    ultimo_timestamp_salvo = timestamp
     print(f"Salvo: cor={cor} | timestamp={ts}")
 
 # ── Callbacks MQTT ──────────────────────────────────────────

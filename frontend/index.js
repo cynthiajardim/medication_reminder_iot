@@ -1,14 +1,27 @@
-const API_URL = 'https://zonal-alignment-production.up.railway.app'; 
+const API_URL = 'considerate-compassion-production-2ff2.up.railway.app';
 
-let todosRegistros    = [];
+// redireciona para login se não houver token
+const token = sessionStorage.getItem('token');
+if (!token) window.location.href = 'login.html';
+
+function authHeaders() {
+  return { 'Authorization': `Bearer ${token}` };
+}
+
+function logout() {
+  sessionStorage.removeItem('token');
+  window.location.href = 'login.html';
+}
+
+let todosRegistros     = [];
 let registrosFiltrados = [];
-let pagina            = 1;
-const porPagina       = 10;
-let graficoInstance   = null;
+let pagina             = 1;
+const porPagina        = 10;
+let graficoInstance    = null;
 
 // calendário
 let calAno = new Date().getFullYear();
-let calMes = new Date().getMonth(); // 0-11
+let calMes = new Date().getMonth();
 
 function setStatus(msg, tipo) {
   document.getElementById('dot').className          = 'dot ' + (tipo || 'loading');
@@ -21,9 +34,14 @@ async function carregar() {
 
   try {
     const [resumoRes, registrosRes] = await Promise.all([
-      fetch(`${base}/resumo`),
-      fetch(`${base}/registros`)
+      fetch(`${base}/resumo`,    { headers: authHeaders() }),
+      fetch(`${base}/registros`, { headers: authHeaders() })
     ]);
+
+    if (resumoRes.status === 401 || registrosRes.status === 401) {
+      logout();
+      return;
+    }
 
     if (!resumoRes.ok || !registrosRes.ok) throw new Error('Erro na API');
 
@@ -98,9 +116,7 @@ function renderizarGrafico(registros) {
   });
 }
 
-// ── Calendário ──────────────────────────────────────────────
 function construirMapaDias(registros) {
-  // { "2025-05-01": "verde" | "vermelho" | "misto" }
   const mapa = {};
   registros.forEach(r => {
     const data = (r.timestamp || r.recebido || '').substring(0, 10);
@@ -108,39 +124,36 @@ function construirMapaDias(registros) {
     if (!mapa[data]) {
       mapa[data] = r.cor;
     } else if (mapa[data] !== r.cor) {
-      mapa[data] = 'misto'; // teve tomado e não tomado no mesmo dia
+      mapa[data] = 'misto';
     }
   });
   return mapa;
 }
 
 function renderizarCalendario() {
-  const mapa    = construirMapaDias(todosRegistros);
-  const hoje    = new Date();
-  const ano     = calAno;
-  const mes     = calMes;
+  const mapa  = construirMapaDias(todosRegistros);
+  const hoje  = new Date();
+  const ano   = calAno;
+  const mes   = calMes;
 
   const nomeMes = new Date(ano, mes, 1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
   document.getElementById('cal-titulo').textContent =
     nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
 
-  const primeiroDia   = new Date(ano, mes, 1).getDay(); // 0=dom
-  const diasNoMes     = new Date(ano, mes + 1, 0).getDate();
-  const diasSemana    = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const primeiroDia = new Date(ano, mes, 1).getDay();
+  const diasNoMes   = new Date(ano, mes + 1, 0).getDate();
+  const diasSemana  = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
   let html = '<div class="cal-grid">';
 
-  // cabeçalho dias da semana
   diasSemana.forEach(d => {
     html += `<div class="cal-dia-semana">${d}</div>`;
   });
 
-  // células vazias antes do primeiro dia
   for (let i = 0; i < primeiroDia; i++) {
     html += '<div class="cal-dia fora"></div>';
   }
 
-  // dias do mês
   for (let dia = 1; dia <= diasNoMes; dia++) {
     const dataStr = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
     const status  = mapa[dataStr] || 'vazio';
@@ -159,7 +172,6 @@ function mudarMes(dir) {
   renderizarCalendario();
 }
 
-// ── Tabela ──────────────────────────────────────────────────
 function renderizarTabela() {
   const wrap   = document.getElementById('tabela-wrap');
   const total  = registrosFiltrados.length;

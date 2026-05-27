@@ -13,14 +13,17 @@
     <h1>📋 Relatório de Medicação</h1>
     <p>Sistema de monitoramento via IoT / ESP32</p>
   </div>
-  <p id="ultima-atualizacao">—</p>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <p id="ultima-atualizacao">—</p>
+    <button class="btn" onclick="logout()">Sair</button>
+  </div>
 </header>
- 
+
 <!-- Status -->
 <div class="status-bar">
-  <span><span class="dot loading" id="dot"></span> <span id="status-msg">Aguardando URL da API...</span></span>
+  <span><span class="dot loading" id="dot"></span> <span id="status-msg">Carregando...</span></span>
 </div>
- 
+
 <!-- Cards resumo -->
 <div class="cards">
   <div class="card green">
@@ -40,7 +43,7 @@
     <div class="value" id="taxa">—</div>
   </div>
 </div>
- 
+
 <!-- Gráfico -->
 <div class="section">
   <div class="section-header">Tomadas por dia</div>
@@ -71,7 +74,7 @@
     </div>
   </div>
 </div>
- 
+
 <!-- Tabela -->
 <div class="section">
   <div class="section-header">
@@ -83,7 +86,6 @@
     </div>
   </div>
   <div class="section-body">
-    <!-- Filtro por data -->
     <div class="filter-row">
       <div>
         <label style="font-size:0.7rem;font-family:var(--mono);color:var(--muted);display:block;margin-bottom:4px">Filtrar por data</label>
@@ -92,10 +94,11 @@
       <button class="btn" onclick="limparFiltro()">Limpar filtro</button>
     </div>
     <div id="tabela-wrap">
-      <div class="empty">Configure a URL da API e clique em "Carregar dados"</div>
+      <div class="empty">Carregando dados...</div>
     </div>
   </div>
 </div>
+
 <script src="index.js"></script>
 </body>
 </html>
