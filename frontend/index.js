@@ -1,4 +1,4 @@
-const API_URL = 'considerate-compassion-production-2ff2.up.railway.app';
+const API_URL = 'https://considerate-compassion-production-2ff2.up.railway.app';
 
 // redireciona para login se não houver token
 const token = sessionStorage.getItem('token');

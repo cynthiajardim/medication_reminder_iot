@@ -1,4 +1,4 @@
-const API_URL = 'https://zonal-alignment-production.up.railway.app';
+const API_URL = 'https://considerate-compassion-production-2ff2.up.railway.app';
 
 // se já estiver logado vai direto pro relatório
 if (sessionStorage.getItem('token')) {
@@ -36,7 +36,7 @@ async function login() {
     window.location.href = 'index.html';
 
   } catch (e) {
-    mostrarErro('Erro ao conectar na API.');
+    mostrarErro('Erro ao conectar na API.' + e.message);
   } finally {
     btn.disabled    = false;
     btn.textContent = 'Entrar';
