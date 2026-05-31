@@ -125,6 +125,24 @@ def ping():
             "database": os.getenv("MYSQLDATABASE"),
         }
 
+# ── Rota temporária para criar primeiro usuário ─────────────
+# ATENÇÃO: remova essa rota após criar o usuário!
+@app.post("/setup")
+def setup(data: LoginInput):
+    password_hash = bcrypt.hashpw(data.password.encode(), bcrypt.gensalt()).decode()
+    try:
+        conn = conectar()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM usuarios WHERE username = %s", (data.username,))
+        cursor.execute(
+            "INSERT INTO usuarios (username, password_hash) VALUES (%s, %s)",
+            (data.username, password_hash)
+        )
+        conn.commit()
+        conn.close()
+        return { "message": f"Usuário {data.username} criado com sucesso" }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ── Auth ────────────────────────────────────────────────────
 @app.post("/login")
