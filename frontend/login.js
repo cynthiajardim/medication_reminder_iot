@@ -1,8 +1,26 @@
-const API_URL = 'https://considerate-compassion-production-2ff2.up.railway.app';
+const apiUrlPromise = carregarApiUrl();
 
 // se já estiver logado vai direto pro relatório
 if (sessionStorage.getItem('token')) {
   window.location.href = 'index.html';
+}
+
+async function carregarApiUrl() {
+  const res = await fetch('.env', { cache: 'no-store' });
+
+  if (!res.ok) {
+    throw new Error('Não foi possível ler frontend/.env.');
+  }
+
+  const envText = await res.text();
+  const match = envText.match(/^\s*API_URL\s*=\s*(.+)\s*$/m);
+  const apiUrl = match?.[1]?.trim().replace(/^['"]|['"]$/g, '').replace(/\/$/, '');
+
+  if (!apiUrl) {
+    throw new Error('API_URL não configurada em frontend/.env.');
+  }
+
+  return apiUrl;
 }
 
 async function login() {
@@ -19,7 +37,8 @@ async function login() {
   btn.textContent = 'Entrando...';
 
   try {
-    const res = await fetch(`${API_URL}/login`, {
+    const apiUrl = await apiUrlPromise;
+    const res = await fetch(`${apiUrl}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })

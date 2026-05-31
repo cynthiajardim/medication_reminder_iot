@@ -1,6 +1,6 @@
 import http.server
-import socketserver
 import os
+import socketserver
 
 PORT = int(os.getenv("PORT", 8080))
 

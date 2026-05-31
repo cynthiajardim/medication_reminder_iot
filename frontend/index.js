@@ -1,8 +1,25 @@
-const API_URL = 'https://considerate-compassion-production-2ff2.up.railway.app';
-
 // redireciona para login se não houver token
 const token = sessionStorage.getItem('token');
 if (!token) window.location.href = 'login.html';
+const apiUrlPromise = carregarApiUrl();
+
+async function carregarApiUrl() {
+  const res = await fetch('.env', { cache: 'no-store' });
+
+  if (!res.ok) {
+    throw new Error('Não foi possível ler frontend/.env.');
+  }
+
+  const envText = await res.text();
+  const match = envText.match(/^\s*API_URL\s*=\s*(.+)\s*$/m);
+  const apiUrl = match?.[1]?.trim().replace(/^['"]|['"]$/g, '').replace(/\/$/, '');
+
+  if (!apiUrl) {
+    throw new Error('API_URL não configurada em frontend/.env.');
+  }
+
+  return apiUrl;
+}
 
 function authHeaders() {
   return { 'Authorization': `Bearer ${token}` };
@@ -29,7 +46,7 @@ function setStatus(msg, tipo) {
 }
 
 async function carregar() {
-  const base = API_URL.trim().replace(/\/$/, '');
+  const base = await apiUrlPromise;
   setStatus('Carregando...', 'loading');
 
   try {
@@ -234,4 +251,6 @@ function limparFiltro() {
   renderizarTabela();
 }
 
-carregar();
+carregar().catch(e => {
+  setStatus('Erro ao carregar configuração: ' + e.message, 'err');
+});

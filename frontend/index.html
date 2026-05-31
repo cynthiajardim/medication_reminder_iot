@@ -1,104 +1,98 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Relatório de Medicação</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="./style/index.css"/>
-</head>
-<body>
-<header>
-  <div>
-    <h1>📋 Relatório de Medicação</h1>
-    <p>Sistema de monitoramento via IoT / ESP32</p>
-  </div>
-  <div style="display:flex;align-items:center;gap:1rem;">
-    <p id="ultima-atualizacao">—</p>
-    <button class="btn" onclick="logout()">Sair</button>
-  </div>
-</header>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Relatório de Medicação</title>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+		<link rel="stylesheet" href="./style/index.css" />
+	</head>
+	<body>
+		<header>
+			<div>
+				<h1>Relatório de Medicação</h1>
+			</div>
+			<div style="display: flex; align-items: center; gap: 1rem">
+				<p id="ultima-atualizacao">—</p>
+				<button class="btn" onclick="logout()">Sair</button>
+			</div>
+		</header>
 
-<!-- Status -->
-<div class="status-bar">
-  <span><span class="dot loading" id="dot"></span> <span id="status-msg">Carregando...</span></span>
-</div>
+		<!-- Status -->
+		<div class="status-bar">
+			<span
+				><span class="dot loading" id="dot"></span>
+				<span id="status-msg">Carregando...</span></span
+			>
+		</div>
 
-<!-- Cards resumo -->
-<div class="cards">
-  <div class="card green">
-    <div class="label">Remédio tomado</div>
-    <div class="value" id="total-verde">—</div>
-  </div>
-  <div class="card red">
-    <div class="label">Não tomado</div>
-    <div class="value" id="total-vermelho">—</div>
-  </div>
-  <div class="card">
-    <div class="label">Total de registros</div>
-    <div class="value" id="total-geral">—</div>
-  </div>
-  <div class="card">
-    <div class="label">Taxa de adesão</div>
-    <div class="value" id="taxa">—</div>
-  </div>
-</div>
+		<!-- Cards resumo -->
+		<div class="cards">
+			<div class="card green">
+				<div class="label">Remédio tomado</div>
+				<div class="value" id="total-verde">—</div>
+			</div>
+			<div class="card red">
+				<div class="label">Não tomado</div>
+				<div class="value" id="total-vermelho">—</div>
+			</div>
+			<div class="card">
+				<div class="label">Total de registros</div>
+				<div class="value" id="total-geral">—</div>
+			</div>
+			<div class="card">
+				<div class="label">Taxa de adesão</div>
+				<div class="value" id="taxa">—</div>
+			</div>
+		</div>
 
-<!-- Gráfico -->
-<div class="section">
-  <div class="section-header">Tomadas por dia</div>
-  <div class="section-body">
-    <div class="chart-wrap">
-      <canvas id="grafico"></canvas>
-    </div>
-  </div>
-</div>
+		<!-- Gráfico -->
+		<div class="section">
+			<div class="section-header">Tomadas por dia</div>
+			<div class="section-body">
+				<div class="chart-wrap">
+					<canvas id="grafico"></canvas>
+				</div>
+			</div>
+		</div>
 
-<!-- Calendário -->
-<div class="section">
-  <div class="section-header">
-    <span>Calendário de adesão</span>
-    <div class="cal-nav">
-      <button onclick="mudarMes(-1)">←</button>
-      <span id="cal-titulo">—</span>
-      <button onclick="mudarMes(1)">→</button>
-    </div>
-  </div>
-  <div class="section-body">
-    <div id="calendario" style="width: 30%;"></div>
-    <div class="cal-legenda">
-      <span><span class="cal-dot verde"></span> Tomado</span>
-      <span><span class="cal-dot vermelho"></span> Não tomado</span>
-      <span><span class="cal-dot misto"></span> Parcial (tomou em alguma dose)</span>
-      <span><span class="cal-dot vazio"></span> Sem registro</span>
-    </div>
-  </div>
-</div>
+		<!-- Tabela -->
+		<div class="section">
+			<div class="section-header">
+				<span>Todos os registros</span>
+				<div class="pagination">
+					<button id="btn-prev" onclick="mudarPagina(-1)" disabled>
+						← anterior
+					</button>
+					<span id="pag-info">—</span>
+					<button id="btn-next" onclick="mudarPagina(1)" disabled>
+						próximo →
+					</button>
+				</div>
+			</div>
+			<div class="section-body">
+				<div class="filter-row">
+					<div>
+						<label
+							style="
+								font-size: 0.7rem;
+								font-family: var(--mono);
+								color: var(--muted);
+								display: block;
+								margin-bottom: 4px;
+							"
+							>Filtrar por data</label
+						>
+						<input type="date" id="filtro-data" onchange="filtrarData()" />
+					</div>
+					<button class="btn" onclick="limparFiltro()">Limpar filtro</button>
+				</div>
+				<div id="tabela-wrap">
+					<div class="empty">Carregando dados...</div>
+				</div>
+			</div>
+		</div>
 
-<!-- Tabela -->
-<div class="section">
-  <div class="section-header">
-    <span>Todos os registros</span>
-    <div class="pagination">
-      <button id="btn-prev" onclick="mudarPagina(-1)" disabled>← anterior</button>
-      <span id="pag-info">—</span>
-      <button id="btn-next" onclick="mudarPagina(1)" disabled>próximo →</button>
-    </div>
-  </div>
-  <div class="section-body">
-    <div class="filter-row">
-      <div>
-        <label style="font-size:0.7rem;font-family:var(--mono);color:var(--muted);display:block;margin-bottom:4px">Filtrar por data</label>
-        <input type="date" id="filtro-data" onchange="filtrarData()"/>
-      </div>
-      <button class="btn" onclick="limparFiltro()">Limpar filtro</button>
-    </div>
-    <div id="tabela-wrap">
-      <div class="empty">Carregando dados...</div>
-    </div>
-  </div>
-</div>
-
-<script src="index.js"></script>
-</body>
+		<script src="index.js"></script>
+	</body>
 </html>
