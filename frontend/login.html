@@ -1,32 +1,41 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Medication Reminder — Login</title>
-<link rel="stylesheet" href="./style/index.css"/>
-</head>
-<body class="login-page">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Medication Reminder — Login</title>
+		<link rel="stylesheet" href="./style/index.css" />
+	</head>
+	<body class="login-page">
+		<div class="login-box">
+			<h1>Medication Reminder</h1>
+			<p class="login-sub">Faça login para acessar o relatório</p>
 
-<div class="login-box">
-  <h1>Medication Reminder</h1>
-  <p class="login-sub">Faça login para acessar o relatório</p>
+			<div id="login-erro" class="login-erro" style="display: none"></div>
 
-  <div id="login-erro" class="login-erro" style="display:none"></div>
+			<div class="login-form">
+				<div>
+					<label class="filter-label">Usuário</label>
+					<input
+						type="text"
+						id="username"
+						placeholder="seu usuário"
+						autocomplete="username"
+					/>
+				</div>
+				<div>
+					<label class="filter-label">Senha</label>
+					<input
+						type="password"
+						id="password"
+						placeholder="sua senha"
+						autocomplete="current-password"
+					/>
+				</div>
+				<button class="btn" id="btn-login" onclick="login()">Entrar</button>
+			</div>
+		</div>
 
-  <div class="login-form">
-    <div>
-      <label class="filter-label">Usuário</label>
-      <input type="text" id="username" placeholder="seu usuário" autocomplete="username"/>
-    </div>
-    <div>
-      <label class="filter-label">Senha</label>
-      <input type="password" id="password" placeholder="sua senha" autocomplete="current-password"/>
-    </div>
-    <button class="btn" id="btn-login" onclick="login()">Entrar</button>
-  </div>
-</div>
-
-<script src="login.js"></script>
-</body>
+		<script src="login.js"></script>
+	</body>
 </html>
