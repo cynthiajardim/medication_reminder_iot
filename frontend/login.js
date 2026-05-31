@@ -6,18 +6,17 @@ if (sessionStorage.getItem('token')) {
 }
 
 async function carregarApiUrl() {
-  const res = await fetch('.env', { cache: 'no-store' });
+  const res = await fetch('/config', { cache: 'no-store' });
 
   if (!res.ok) {
-    throw new Error('Não foi possível ler frontend/.env.');
+    throw new Error('Não foi possível carregar a configuração.');
   }
 
-  const envText = await res.text();
-  const match = envText.match(/^\s*API_URL\s*=\s*(.+)\s*$/m);
-  const apiUrl = match?.[1]?.trim().replace(/^['"]|['"]$/g, '').replace(/\/$/, '');
+  const config = await res.json();
+  const apiUrl = config.API_URL?.trim();
 
   if (!apiUrl) {
-    throw new Error('API_URL não configurada em frontend/.env.');
+    throw new Error('API_URL não configurada no servidor.');
   }
 
   return apiUrl;
