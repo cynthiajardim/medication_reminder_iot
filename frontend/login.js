@@ -5,6 +5,23 @@ if (sessionStorage.getItem("token")) {
 	window.location.href = "index.html";
 }
 
+async function carregarApiUrl() {
+	const res = await fetch("/config", { cache: "no-store" });
+
+	if (!res.ok) {
+		throw new Error("Não foi possível carregar a configuração.");
+	}
+
+	const config = await res.json();
+	const apiUrl = config.API_URL?.trim();
+
+	if (!apiUrl) {
+		throw new Error("API_URL não configurada no servidor.");
+	}
+
+	return apiUrl;
+}
+
 async function login() {
 	const username = document.getElementById("username").value.trim();
 	const password = document.getElementById("password").value.trim();
